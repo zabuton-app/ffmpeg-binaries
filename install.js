@@ -20,13 +20,20 @@ async function install(tool, expected) {
   const url = `https://github.com/zabuton-app/ffmpeg-binaries/releases/download/v${version}/${tool}-${target}.gz`;
   const response = await fetch(url);
   if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
-  const binary = gunzipSync(Buffer.from(await response.arrayBuffer()));
+  // The size limit stops a replaced asset from expanding without bound
+  // before its checksum is looked at.
+  const binary = gunzipSync(Buffer.from(await response.arrayBuffer()), {
+    maxOutputLength: expected.size,
+  });
   const actual = sha256(binary);
   if (actual !== expected.sha256) {
     throw new Error(`${url}: SHA-256 is ${actual}, expected ${expected.sha256}`);
   }
   fs.mkdirSync(path.dirname(dest), { recursive: true });
-  fs.writeFileSync(dest, binary, { mode: 0o755 });
+  // Written under another name first: an interrupted install must not leave
+  // half an executable where index.js points.
+  fs.writeFileSync(`${dest}.tmp`, binary, { mode: 0o755 });
+  fs.renameSync(`${dest}.tmp`, dest);
 }
 
 async function main() {

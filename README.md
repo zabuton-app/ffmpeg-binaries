@@ -6,17 +6,22 @@ The apps bundle ffmpeg and ffprobe. This repository keeps a copy of the upstream
 
 ## Use
 
-Each release carries the package as a tarball. Add its URL as a dependency:
+Each [release](https://github.com/zabuton-app/ffmpeg-binaries/releases) carries the package as a tarball, `zabuton-app-ffmpeg-binaries-<version>.tgz`. Add its URL as a dependency:
 
 ```json
 {
   "dependencies": {
-    "@zabuton-app/ffmpeg-binaries": "https://github.com/zabuton-app/ffmpeg-binaries/releases/download/v1.0.1/zabuton-app-ffmpeg-binaries-1.0.1.tgz"
+    "@zabuton-app/ffmpeg-binaries": "https://github.com/zabuton-app/ffmpeg-binaries/releases/download/v<version>/zabuton-app-ffmpeg-binaries-<version>.tgz"
   }
 }
 ```
 
-npm records the tarball's integrity in the lockfile. A `github:` dependency is not used because npm 12 refuses git dependencies by default.
+npm records the tarball's integrity in the lockfile. npm 12 needs two more settings in the app, because it refuses URL dependencies and install scripts by default:
+
+- `allow-remote=root` in the app's `.npmrc`.
+- The same URL as a key in `allowScripts` in the app's `package.json`, set to `true`.
+
+A `github:` dependency is not used because npm 12 refuses git dependencies as well.
 
 ```js
 import { ffmpegPath, ffprobePath } from "@zabuton-app/ffmpeg-binaries";
@@ -43,6 +48,8 @@ The platform is `npm_config_platform` and `npm_config_arch` when they are set, a
 3. Raise `version` in `package.json`, commit, and push the tag `v<version>`.
 
 The [release workflow](.github/workflows/release.yml) then builds the assets again from `sources.json` and publishes them. It stops without publishing when its result differs from the committed `binaries.json`.
+
+In each app, change the URL in both `dependencies` and `allowScripts` to the new release and run `npm install` to update the lockfile.
 
 ## License
 

@@ -6,15 +6,17 @@ The apps bundle ffmpeg and ffprobe. This repository keeps a copy of the upstream
 
 ## Use
 
-Add the repository as a dependency, pinned to a tag:
+Each release carries the package as a tarball. Add its URL as a dependency:
 
 ```json
 {
   "dependencies": {
-    "@zabuton-app/ffmpeg-binaries": "github:zabuton-app/ffmpeg-binaries#v1.0.0"
+    "@zabuton-app/ffmpeg-binaries": "https://github.com/zabuton-app/ffmpeg-binaries/releases/download/v1.0.1/zabuton-app-ffmpeg-binaries-1.0.1.tgz"
   }
 }
 ```
+
+npm records the tarball's integrity in the lockfile. A `github:` dependency is not used because npm 12 refuses git dependencies by default.
 
 ```js
 import { ffmpegPath, ffprobePath } from "@zabuton-app/ffmpeg-binaries";

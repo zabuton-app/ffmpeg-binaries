@@ -1,0 +1,49 @@
+name: Release
+
+# Pushing a v* tag rebuilds the assets from the pinned upstream archives and
+# publishes them. The release is refused when the result differs from the
+# binaries.json committed at that tag, so what install.js verifies is exactly
+# what this workflow built.
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22.x
+
+      - name: Check the tag against package.json
+        run: test "v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
+
+      - name: Build the assets
+        run: node scripts/mirror.mjs
+
+      - name: Check binaries.json
+        run: git diff --exit-code binaries.json
+
+      - name: Publish
+        run: |
+          {
+            echo "FFmpeg $(node -p 'require("./sources.json").ffmpeg'). Upstream archives:"
+            echo
+            node -e '
+              const { targets } = require("./sources.json");
+              const seen = new Set();
+              for (const tools of Object.values(targets))
+                for (const { url, sha256 } of Object.values(tools))
+                  if (!seen.has(url)) { seen.add(url); console.log(`- ${url}\n  SHA-256 \`${sha256}\``); }
+            '
+          } > notes.md
+          gh release create "$GITHUB_REF_NAME" dist/*.gz --title "$GITHUB_REF_NAME" --notes-file notes.md
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -23,22 +23,22 @@
     },
     "linux-x64": {
       "ffmpeg": {
-        "sha256": "2624cfce1acdb259fe72b6d020dac937a1e7e66cf3578d8c4d43704e69a42cba",
-        "size": 91342624
+        "sha256": "384742b75419584d065bbf372613f9f7e8ccf22525b421c16a2ee679a78ee748",
+        "size": 173534088
       },
       "ffprobe": {
-        "sha256": "fa300ee31cd55e7a8d052f16d017fde3b68d842dff39e0c29575ced5278947d6",
-        "size": 91141792
+        "sha256": "ae9051af68f52e7ad5706b442577689c74c02da618ca1590caf1ac7199f2931c",
+        "size": 173300552
       }
     },
     "linux-arm64": {
       "ffmpeg": {
-        "sha256": "d8802725e54217a3fcb22dfb14d95cb648c0383685802bb155091575cf44a3ff",
-        "size": 59994536
+        "sha256": "091fe4df4902fedd20f4d5accab14d02947a531d14d789cc7e8f18b0a808e6d1",
+        "size": 131591912
       },
       "ffprobe": {
-        "sha256": "814bee3ef4bd807ec3c0baa0dd83acf6f7d399d7df4fe14218f5492211183e76",
-        "size": 59797832
+        "sha256": "8e967d51f1e9e7d1c84423417e68625d267128c5014e0c20ae470f53506631ef",
+        "size": 131395304
       }
     },
     "win32-x64": {

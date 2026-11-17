@@ -1,6 +1,6 @@
 {
   "name": "@zabuton-app/ffmpeg-binaries",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "ffmpeg and ffprobe executables for the zabuton apps, mirrored from upstream builds",
   "license": "MIT",
   "private": true,

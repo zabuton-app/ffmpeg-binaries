@@ -5,7 +5,8 @@
 // dist/<tool>-<target>.gz. The SHA-256 of each extracted executable goes into
 // binaries.json, which install.js checks every download against.
 //
-// Requires `7z` on PATH (it reads both the .zip and the .7z archives).
+// Requires `7z` on PATH for the .zip and .7z archives, and `tar` for the
+// .tar.xz ones (7z would only take off the xz layer).
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -48,11 +49,19 @@ for (const [target, tools] of Object.entries(sources.targets)) {
   files[target] = {};
   for (const [tool, source] of Object.entries(tools)) {
     const file = await archive(source.url, source.sha256);
-    const binary = execFileSync("7z", ["e", "-so", file, source.member], {
+    const [command, args] = source.url.endsWith(".tar.xz")
+      ? ["tar", ["-xOJf", file, source.member]]
+      : ["7z", ["e", "-so", file, source.member]];
+    const binary = execFileSync(command, args, {
       maxBuffer: 512 * 1024 * 1024,
     });
     if (binary.length === 0) {
       throw new Error(`${source.member} not found in ${source.url}`);
+    }
+    // FFmpeg embeds its configure line. A nonfree build is not legally
+    // redistributable, and nothing else would notice one slipping in.
+    if (binary.includes("--enable-nonfree")) {
+      throw new Error(`${source.url}: ${tool} is a nonfree build`);
     }
     // Level 9 and no timestamp, so the same input always gives the same asset.
     fs.writeFileSync(

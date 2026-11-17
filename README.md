@@ -36,15 +36,17 @@ The platform is `npm_config_platform` and `npm_config_arch` when they are set, a
 | Platform | Source | Minimum system |
 | --- | --- | --- |
 | `darwin-arm64`, `darwin-x64` | [ffmpeg.martin-riedl.de](https://ffmpeg.martin-riedl.de/) | macOS 12 |
-| `linux-x64`, `linux-arm64` | [ffmpeg.martin-riedl.de](https://ffmpeg.martin-riedl.de/) | glibc 2.35 |
+| `linux-x64`, `linux-arm64` | [BtbN/FFmpeg-Builds](https://github.com/BtbN/FFmpeg-Builds), `gpl` variant of the release branch | glibc 2.28 |
 | `win32-x64` | [GyanD/codexffmpeg](https://github.com/GyanD/codexffmpeg), essentials build | not checked |
 
-[sources.json](sources.json) lists the exact archive URL and its SHA-256 for every executable. The current FFmpeg version is in the `ffmpeg` field of that file.
+[sources.json](sources.json) lists the exact archive URL and its SHA-256 for every executable. The current FFmpeg version is in the `ffmpeg` field of that file. BtbN builds the tip of the release branch, so the Linux executables can be a few fixes past that version; the archive name says which commit (for example `n9.0.2-39-g7adfbe40dc`).
+
+Only builds without nonfree parts can be mirrored: `ffmpeg -L` on a nonfree build says it is not legally redistributable. `npm run mirror` refuses one.
 
 ## Update the binaries
 
-1. Edit `sources.json`: the `ffmpeg` version, and the `url`, `sha256` and `member` of every entry. Take each SHA-256 from the checksum the upstream publishes, not from your own download.
-2. Run `npm run mirror`. It needs `7z` on `PATH`. It downloads the archives, checks them, and rewrites `binaries.json`.
+1. Edit `sources.json`: the `ffmpeg` version, and the `url`, `sha256` and `member` of every entry. Take each SHA-256 from the checksum the upstream publishes, not from your own download. For BtbN, use a dated `autobuild-*` release rather than `latest`; the last build of each month is kept for two years.
+2. Run `npm run mirror`. It needs `7z` and `tar` on `PATH`. It downloads the archives, checks them, and rewrites `binaries.json`.
 3. Raise `version` in `package.json`, commit, and push the tag `v<version>`.
 
 The [release workflow](.github/workflows/release.yml) then builds the assets again from `sources.json` and publishes them. It stops without publishing when its result differs from the committed `binaries.json`.
@@ -55,4 +57,4 @@ In each app, change the URL in both `dependencies` and `allowScripts` to the new
 
 The scripts in this repository are released under the [MIT License](LICENSE).
 
-The executables in the releases are GPL builds of FFmpeg and are licensed under the [GNU General Public License, version 3](https://www.gnu.org/licenses/gpl-3.0.html) or later. They are redistributed unmodified. The corresponding source is the [FFmpeg source](https://ffmpeg.org/download.html) of the version named in `sources.json`, together with the libraries each upstream build lists on the pages linked above.
+The executables in the releases are GPL builds of FFmpeg and are licensed under the [GNU General Public License, version 3](https://www.gnu.org/licenses/gpl-3.0.html) or later. They are redistributed unmodified. The corresponding source is the [FFmpeg source](https://ffmpeg.org/download.html) of the version named in `sources.json` (for Linux, the FFmpeg commit named in the archive), together with the libraries each upstream build lists on the pages linked above.

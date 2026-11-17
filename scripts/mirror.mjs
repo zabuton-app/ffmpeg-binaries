@@ -24,16 +24,32 @@ fs.mkdirSync(dist, { recursive: true });
 
 const sha256 = (data) => createHash("sha256").update(data).digest("hex");
 
+// A long download can outlast the idle timeout of another kept-alive
+// connection to the same host (github.com, for two BtbN archives in a row).
+// The next request then goes out on a socket the server has closed and fails
+// with "other side closed", so a network error is tried again.
+async function download(url) {
+  for (let attempt = 1; ; attempt++) {
+    console.log(`download ${url}`);
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
+      return Buffer.from(await response.arrayBuffer());
+    } catch (err) {
+      // HTTP errors are not retried: they are not a dropped connection.
+      if (!(err instanceof TypeError) || attempt === 3) throw err;
+      console.log(`retry after ${err.message}`);
+    }
+  }
+}
+
 // Several tools can come from one archive, so each URL is downloaded once.
 const archives = new Map();
 async function archive(url, expected) {
   if (!archives.has(url)) {
     const file = path.join(work, sha256(url));
     if (!fs.existsSync(file) || sha256(fs.readFileSync(file)) !== expected) {
-      console.log(`download ${url}`);
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
-      fs.writeFileSync(file, Buffer.from(await response.arrayBuffer()));
+      fs.writeFileSync(file, await download(url));
     }
     const actual = sha256(fs.readFileSync(file));
     if (actual !== expected) {

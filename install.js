@@ -12,17 +12,30 @@ const { target, binaryPath } = require("./paths.js");
 
 const sha256 = (data) => createHash("sha256").update(data).digest("hex");
 
+async function download(url) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
+      return Buffer.from(await response.arrayBuffer());
+    } catch (err) {
+      // fetch reports a dropped connection as a TypeError ("terminated").
+      // HTTP errors are not retried: they are not a dropped connection.
+      if (!(err instanceof TypeError) || attempt === 3) throw err;
+      console.warn(`ffmpeg-binaries: retrying ${url} after ${err.message}`);
+    }
+  }
+}
+
 async function install(tool, expected) {
   const dest = binaryPath(tool);
   if (fs.existsSync(dest) && sha256(fs.readFileSync(dest)) === expected.sha256) {
     return;
   }
   const url = `https://github.com/zabuton-app/ffmpeg-binaries/releases/download/v${version}/${tool}-${target}.gz`;
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
   // The size limit stops a replaced asset from expanding without bound
   // before its checksum is looked at.
-  const binary = gunzipSync(Buffer.from(await response.arrayBuffer()), {
+  const binary = gunzipSync(await download(url), {
     maxOutputLength: expected.size,
   });
   const actual = sha256(binary);

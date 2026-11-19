@@ -27,7 +27,7 @@ A `github:` dependency is not used because npm 12 refuses git dependencies as we
 import { ffmpegPath, ffprobePath } from "@zabuton-app/ffmpeg-binaries";
 ```
 
-The install script downloads the two executables for one platform from the release that matches the package version, checks each against the SHA-256 in [binaries.json](binaries.json), and writes them to `bin/`. It needs Node.js 22 or later and no other tool. The install fails when a download or a checksum fails.
+The install script downloads the two executables for one platform from the release that matches the package version, checks each against the SHA-256 in [binaries.json](binaries.json), and writes them to `bin/`. It needs Node.js 22 or later and no other tool. A download that fails on a dropped connection is tried up to three times; the install fails when a download still fails, on an HTTP error, or when a checksum fails.
 
 The platform is `npm_config_platform` and `npm_config_arch` when they are set, and the running platform otherwise. On a platform that has no binaries, the install prints a warning and both paths are `null`.
 

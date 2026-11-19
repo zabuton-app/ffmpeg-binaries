@@ -37,6 +37,13 @@ async function install(tool, expected) {
 }
 
 async function main() {
+  // For a build that brings its own FFmpeg (a distribution package that
+  // depends on the system one). --ignore-scripts would also skip every other
+  // install script in the app, such as native module rebuilds.
+  if (process.env.ZABUTON_FFMPEG_SKIP_DOWNLOAD === "1") {
+    console.warn("ffmpeg-binaries: ZABUTON_FFMPEG_SKIP_DOWNLOAD=1, not downloading");
+    return;
+  }
   const tools = files[target];
   if (!tools) {
     // Not an error: index.js exports null paths and the caller decides.

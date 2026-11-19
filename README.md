@@ -31,6 +31,8 @@ The install script downloads the two executables for one platform from the relea
 
 The platform is `npm_config_platform` and `npm_config_arch` when they are set, and the running platform otherwise. On a platform that has no binaries, the install prints a warning and both paths are `null`.
 
+Set `ZABUTON_FFMPEG_SKIP_DOWNLOAD=1` to install without downloading, for a build that brings its own FFmpeg, such as a distribution package that depends on the system one. The paths are exported as usual, but nothing is written to `bin/`, so the app has to check that the files exist. `npm install --ignore-scripts` is no substitute: it also skips the install scripts of every other package, such as native module rebuilds.
+
 ## Platforms and sources
 
 | Platform | Source | Minimum system |
